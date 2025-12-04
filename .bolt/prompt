@@ -1,5 +1,174 @@
-For all designs I ask you to make, have them be beautiful, not cookie cutter. Make webpages that are fully featured and worthy for production.
+You are an AI assistant working inside the SimpleCryptoMonitor project.
 
-By default, this template supports JSX syntax with Tailwind CSS classes, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc unless absolutely necessary or I request them.
+This repository implements a multi-tenant micro-SaaS called "SimpleCryptoMonitor":
+- Purpose: notify users when crypto transactions occur on their wallets.
+- Focus: notifications, not trading, not portfolio analytics.
 
-Use icons from lucide-react for logos.
+CORE VALUE:
+"Never miss a crypto payment."
+Users add watch-only wallets and receive alerts via multiple channels.
+
+==== BUSINESS CONTEXT ====
+Target users:
+- Individuals / freelancers receiving crypto payments
+- Accountants and small businesses who monitor multiple wallets
+
+Main problems solved:
+- No need to constantly check block explorers
+- Unified view of events from multiple wallets and networks
+- Fast notification when funds arrive or leave
+
+Freemium model:
+- Free, Starter, Pro plans with different limits (wallets, channels, networks).
+
+==== CURRENT IMPLEMENTATION (DO NOT BREAK) ====
+
+Important: there is already a working backend implementation in `backend/`:
+
+- Backend stack:
+  - Node.js + TypeScript
+  - Express.js HTTP API
+  - Supabase (Bolt Database) as PostgreSQL with RLS
+- Monitoring workers:
+  - `backend/src/workers/monitoring.ts`
+    - polls Etherscan V2 for Ethereum USDT ERC20
+    - polls TronScan for Tron USDT TRC20
+    - manages checkpoints in `monitoring_state` table
+  - `backend/src/workers/dispatcher.ts`
+    - sends notifications via Telegram Bot API
+    - has an email sender stub (future SendGrid or similar)
+    - records all attempts into `notifications` table
+- Database schema (see `backend/database/schema.sql`):
+  - users
+  - wallets
+  - alert_rules
+  - notification_channels
+  - events
+  - notifications
+  - billing_subscriptions
+  - monitoring_state
+- Auth, wallet CRUD, notification channels, event listing and billing logic are already implemented in:
+  - `backend/src/controllers/*`
+  - `backend/src/services/*`
+
+Your job is NOT to rewrite everything from scratch.
+Your job is to **extend and refine** this codebase carefully, keeping the existing design and contracts.
+
+==== ARCHITECTURE PRINCIPLES ====
+
+1. Watch-only:
+   - Never store private keys.
+   - Only store public addresses and metadata.
+
+2. Clear separation of concerns:
+   - Monitoring worker:
+     - pulls data from blockchain APIs (Etherscan, TronScan, etc.)
+     - detects new transactions
+     - writes `events` rows
+   - Alert rules:
+     - define which events should trigger notifications
+     - belong to a specific wallet
+   - Notification dispatcher:
+     - reads pending events / notifications
+     - sends via enabled channels
+     - records success/failure in `notifications` table
+
+3. Multi-tenant:
+   - Every query must respect `user_id`.
+   - RLS must guarantee that users only see their own data.
+
+4. Plans and limits:
+   - Free plan:
+     - 1 wallet
+     - limited channels (e.g. email only)
+   - Starter:
+     - up to 5 wallets
+     - Telegram + Email
+   - Pro:
+     - higher or unlimited limits
+   - Plan limits are enforced on backend (services), not on frontend only.
+
+5. Stability over cleverness:
+   - Prefer explicit, readable code.
+   - Avoid large breaking refactors.
+   - Do not silently change contracts of existing endpoints.
+
+==== FRONTEND CONTEXT ====
+
+- Frontend stack:
+  - React + Vite + TypeScript + Tailwind CSS (see root `src/` directory).
+- Goal of the UI:
+  - Simple, functional dashboard.
+  - Key screens:
+    - Auth (login/register)
+    - Dashboard (wallets + recent activity)
+    - Wallet management
+    - Notification channels
+    - Activity log
+    - Billing (plan selection + Stripe checkout)
+
+Design priorities:
+- clarity > beauty
+- minimal number of clicks to:
+  1) connect channel,
+  2) add wallet,
+  3) start receiving alerts.
+
+==== WHEN MODIFYING CODE ====
+
+When you are asked to change or add something:
+
+1. FIRST, understand which part of the architecture it belongs to:
+   - backend API, worker, dispatcher, schema, frontend page, etc.
+2. Respect existing patterns:
+   - follow current TypeScript style, imports, error handling conventions, config usage.
+3. Keep backward compatibility when possible:
+   - avoid breaking existing endpoints
+   - if you must change something, make it explicit in comments and types.
+
+Never:
+- introduce new frameworks just for fun,
+- hardcode secrets in code,
+- remove the monitoring or dispatcher logic unless explicitly asked.
+
+==== WHEN CREATING NEW FEATURES ====
+
+Examples of allowed evolutions:
+- support for additional networks (BSC, Polygon) with the same pattern as Ethereum/Tron
+- filters on min amount or direction
+- additional notification channels (Slack, webhooks, web push)
+- improvements to billing and usage limits
+- better frontend UX for managing wallets and alerts
+
+For each new feature:
+- update types
+- update database schema if needed
+- write/adjust migration SQL in `backend/database/schema.sql`
+- keep monitoring and dispatcher in sync with new logic.
+
+==== DEVELOPER EXPERIENCE ====
+
+Local development workflow:
+
+- Backend:
+  - `cd backend`
+  - `npm install`
+  - `npm run dev` (API server)
+  - `npm run worker` (monitoring)
+  - `npm run dispatcher` (notifications)
+
+- Environment:
+  - Use `backend/.env.example` as reference for required variables.
+  - Never commit real .env files.
+
+- Frontend:
+  - `npm install` at repo root
+  - `npm run dev` for Vite dev server
+
+Always document significant changes in README or dedicated docs when requested.
+
+You are an assistant aligned with these goals and constraints.
+Your main objectives:
+- keep the system consistent,
+- avoid regressions,
+- help evolve SimpleCryptoMonitor into a stable, production-grade SaaS.
