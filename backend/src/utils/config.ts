@@ -23,6 +23,8 @@ export const config = {
   STRIPE_PRO_PRICE_ID: process.env.STRIPE_PRO_PRICE_ID || '',
 
   TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
+  TELEGRAM_BOT_USERNAME: process.env.TELEGRAM_BOT_USERNAME || '',
+  TELEGRAM_WEBHOOK_SECRET: process.env.TELEGRAM_WEBHOOK_SECRET || '',
   SENDGRID_API_KEY: process.env.SENDGRID_API_KEY || '',
 
   ETHERSCAN_API_KEY: process.env.ETHERSCAN_API_KEY || '',
