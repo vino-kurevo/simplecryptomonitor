@@ -11,6 +11,7 @@ import { WalletAddress } from './pages/onboarding/WalletAddress';
 import { SelectNotifications } from './pages/onboarding/SelectNotifications';
 import { TestNotification } from './pages/onboarding/TestNotification';
 import { WalletSettings } from './pages/WalletSettings';
+import { NotificationSettings } from './pages/NotificationSettings';
 import { Billing } from './pages/Billing';
 import { FAQ } from './pages/FAQ';
 import { Support } from './pages/Support';
@@ -58,6 +59,12 @@ function App() {
           <Route path="/wallet/:id" element={
             <ProtectedRoute>
               <WalletSettings />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/notifications" element={
+            <ProtectedRoute>
+              <NotificationSettings />
             </ProtectedRoute>
           } />
 

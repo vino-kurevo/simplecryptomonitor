@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, Bell, CheckCircle } from 'lucide-react';
 import { Header } from '../components/Header';
 import { WalletCard } from '../components/WalletCard';
 import { Button } from '../components/Button';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { api } from '../lib/api';
 
 interface Wallet {
   id: string;
@@ -19,11 +20,16 @@ interface UserData {
   current_plan: string;
 }
 
+interface NotificationStatus {
+  telegram_connected: boolean;
+}
+
 export function Dashboard() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [notificationStatus, setNotificationStatus] = useState<NotificationStatus>({ telegram_connected: false });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,6 +55,15 @@ export function Dashboard() {
         .order('created_at', { ascending: false });
 
       setWallets(walletsData || []);
+
+      if (session?.access_token) {
+        try {
+          const telegramStatus = await api.telegram.getStatus(session.access_token);
+          setNotificationStatus({ telegram_connected: telegramStatus.connected });
+        } catch (err) {
+          console.error('Error loading notification status:', err);
+        }
+      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -104,6 +119,47 @@ export function Dashboard() {
               </button>
             )}
           </div>
+
+          <button
+            onClick={() => navigate('/notifications')}
+            className="w-full bg-white rounded-xl p-4 mb-6 border border-gray-200 hover:border-blue-300 transition-colors text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                {notificationStatus.telegram_connected ? (
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Bell className="w-5 h-5 text-blue-600" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-gray-900">
+                    Notifications
+                  </span>
+                  {notificationStatus.telegram_connected && (
+                    <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                      Connected
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  {notificationStatus.telegram_connected
+                    ? 'Telegram alerts active'
+                    : 'Connect Telegram to receive alerts'}
+                </p>
+              </div>
+              <div className="flex-shrink-0 text-gray-400">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </button>
 
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Your Wallets</h2>

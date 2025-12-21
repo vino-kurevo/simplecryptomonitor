@@ -67,6 +67,15 @@ export function Header({ title, showBack = false, showMenu = false }: HeaderProp
             </button>
             <button
               onClick={() => {
+                navigate('/notifications');
+                setMenuOpen(false);
+              }}
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              Notifications
+            </button>
+            <button
+              onClick={() => {
                 navigate('/billing');
                 setMenuOpen(false);
               }}
