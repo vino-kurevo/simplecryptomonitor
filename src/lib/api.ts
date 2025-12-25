@@ -48,14 +48,14 @@ async function fetchWithAuth(endpoint: string, token: string | undefined, option
 export const api = {
   telegram: {
     createConnectToken: async (token: string, destination: 'direct' | 'group') => {
-      return fetchWithAuth('/telegram/connect-token', token, {
+      return fetchWithAuth('/api/telegram/connect-token', token, {
         method: 'POST',
         body: JSON.stringify({ destination }),
       });
     },
 
     getStatus: async (token: string) => {
-      return fetchWithAuth('/telegram/status', token, {
+      return fetchWithAuth('/api/telegram/status', token, {
         method: 'GET',
       });
     },
@@ -63,7 +63,7 @@ export const api = {
 
   notificationChannels: {
     getAll: async (token: string) => {
-      return fetchWithAuth('/notification-channels', token, {
+      return fetchWithAuth('/api/notification-channels', token, {
         method: 'GET',
       });
     },
