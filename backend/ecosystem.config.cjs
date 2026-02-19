@@ -2,16 +2,13 @@ module.exports = {
   apps: [
     {
       name: 'monitoring-worker',
-      script: './node_modules/.bin/tsx',
-      args: 'src/workers/monitoring.ts',
+      script: '/tmp/cc-agent/61105712/project/backend/start-monitoring.sh',
       cwd: '/tmp/cc-agent/61105712/project/backend',
+      interpreter: '/bin/bash',
       instances: 1,
       autorestart: true,
       watch: false,
       max_memory_restart: '500M',
-      env: {
-        NODE_ENV: 'production',
-      },
       error_file: '/tmp/cc-agent/61105712/project/backend/logs/monitoring-error.log',
       out_file: '/tmp/cc-agent/61105712/project/backend/logs/monitoring-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
@@ -19,16 +16,13 @@ module.exports = {
     },
     {
       name: 'dispatcher-worker',
-      script: './node_modules/.bin/tsx',
-      args: 'src/workers/dispatcher.ts',
+      script: '/tmp/cc-agent/61105712/project/backend/start-dispatcher.sh',
       cwd: '/tmp/cc-agent/61105712/project/backend',
+      interpreter: '/bin/bash',
       instances: 1,
       autorestart: true,
       watch: false,
       max_memory_restart: '500M',
-      env: {
-        NODE_ENV: 'production',
-      },
       error_file: '/tmp/cc-agent/61105712/project/backend/logs/dispatcher-error.log',
       out_file: '/tmp/cc-agent/61105712/project/backend/logs/dispatcher-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
